@@ -14,7 +14,7 @@ const corsOptions = {
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:5173',
-        'https://prince-red.vercel.app/' // Add your production domain here
+        'https://prince-red.vercel.app' // Add your production domain here
     ],
     credentials: true,
     optionsSuccessStatus: 200
