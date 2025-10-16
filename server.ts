@@ -58,7 +58,12 @@ app.get('/api/payrolls', async (req, res) => {
             return res.status(503).json({ error: 'Database not connected' });
         }
         const payrolls = await db.collection('payrolls').find({}).toArray();
-        res.json(payrolls);
+        // Convert ObjectId to string for API response
+        const serializedPayrolls = payrolls.map(payroll => ({
+            ...payroll,
+            _id: payroll._id.toString()
+        }));
+        res.json(serializedPayrolls);
     } catch (err) {
         console.error('Error fetching payrolls:', err);
         res.status(500).json({ error: 'Failed to fetch payrolls' });
@@ -70,9 +75,9 @@ app.post('/api/payrolls', async (req, res) => {
         if (!db) {
             return res.status(503).json({ error: 'Database not connected' });
         }
-        const newPayroll: Omit<Payroll, 'id'> = req.body;
+        const newPayroll = req.body as Omit<Payroll, '_id'>;
         const result = await db.collection('payrolls').insertOne(newPayroll);
-        res.status(201).json({ ...newPayroll, id: result.insertedId });
+        res.status(201).json({ ...newPayroll, _id: result.insertedId.toString() });
     } catch (err) {
         console.error('Error creating payroll:', err);
         res.status(500).json({ error: 'Failed to create payroll' });
@@ -85,8 +90,10 @@ app.put('/api/payrolls/:id', async (req, res) => {
             return res.status(503).json({ error: 'Database not connected' });
         }
         const { id } = req.params;
-        const updatedPayroll: Partial<Payroll> = req.body;
-        delete updatedPayroll.id;
+        const updatedPayroll = req.body as Omit<Payroll, '_id'>;
+        
+        // Remove _id from update payload if it exists
+        delete (updatedPayroll as any)._id;
 
         const result = await db.collection('payrolls').updateOne(
             { _id: new ObjectId(id) },
@@ -98,7 +105,11 @@ app.put('/api/payrolls/:id', async (req, res) => {
         }
 
         const payroll = await db.collection('payrolls').findOne({ _id: new ObjectId(id) });
-        res.json(payroll);
+        const serializedPayroll = {
+            ...payroll,
+            _id: payroll?._id.toString()
+        };
+        res.json(serializedPayroll);
     } catch (err) {
         console.error('Error updating payroll:', err);
         res.status(500).json({ error: 'Failed to update payroll' });
