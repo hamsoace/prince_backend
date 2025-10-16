@@ -18,7 +18,7 @@ export interface Deductions {
 }
 
 export interface Payroll {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   date: string;
